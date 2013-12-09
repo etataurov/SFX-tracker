@@ -3,9 +3,10 @@ import asyncio
 from vase import Vase
 from jinja2 import Environment, FileSystemLoader
 from .tracker import Tracker
+from .config import TIMEOUT, URL_TIMEOUT
 
 app = Vase(__name__)
-tracker = Tracker(5, 10)
+tracker = Tracker(URL_TIMEOUT, TIMEOUT)
 
 TEMPLATES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 

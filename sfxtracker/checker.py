@@ -38,7 +38,7 @@ class Checker:
         text = MIMEText(self.make_message(changes), 'html')
         msg.attach(text)
 
-        s = smtplib.SMTP_SSL(SMTP_SERVER)
+        s = smtplib.SMTP(SMTP_SERVER, port=SMTP_PORT)
         s.login(LOGIN, PASSWORD)
         try:
             log.debug('sending new mail to {}'.format(self.to_email))
