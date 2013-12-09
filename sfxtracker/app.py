@@ -24,7 +24,7 @@ def index(request):
         return template.render()
 
 
-def main(host='127.0.0.1'):
+def main(host='127.0.0.1', port=3000):
     loop = asyncio.get_event_loop()
     loop.call_soon(tracker.run)
-    app.run(host=host)
+    app.run(host=host, port=port)
