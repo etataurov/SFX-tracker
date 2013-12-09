@@ -49,8 +49,9 @@ class Checker:
     def parse_content(self, content):
         parsed = BeautifulSoup(content)
         new_changes = []
-        for tr in parsed.table.find_all('tr')[:0:-1]:  # newer events are higher
-            date, event = [x.text for x in tr.find_all('td')]
+        for status_div in parsed.find_all('div', class_='status')[:0:-1]:  # newer events are higher
+            date = status_div.find('div', class_='date').text
+            event = status_div.find('div', class_='description').text
             if date not in self.changes:
                 new_changes.append((date, event))
                 log.info('new event [{}]: {}'.format(date, event))
