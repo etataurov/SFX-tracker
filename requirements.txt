@@ -3,6 +3,7 @@ MarkupSafe==0.18
 Routes==2.0
 -e git+https://github.com/vkryachko/Vase@7ee3093615f63298c8969ca1f757c8317510bb12#egg=Vase-origin/master
 asyncio==0.2.1
+asyncio-redis==0.3
 beautifulsoup4==4.3.2
 enum34==0.9.19
 repoze.lru==0.6
