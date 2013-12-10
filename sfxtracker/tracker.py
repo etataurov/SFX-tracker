@@ -40,8 +40,17 @@ class Tracker:
                 log.debug('ready')
                 yield from connection.lpop('data')
                 email = yield from connection.hget(url, 'email')
+                last_date = yield from connection.hget(url, 'last_date')
                 log.info('started checking for {} {}'.format(url, email))
-                self.do_check(url, email)  # TODO do in thread
+
+                try:
+                    new_date = self.do_check(url, email, last_date)  # TODO do in thread
+                except Exception as exc:
+                    log.error(str(exc))
+                else:
+                    if new_date is not None:
+                        yield from connection.hset(url, 'last_date', new_date)
+
                 yield from connection.lpush('data', [url])
                 yield from self.set_timeout(connection, url)
             else:
@@ -49,9 +58,9 @@ class Tracker:
         loop = asyncio.get_event_loop()
         loop.call_later(self.timeout, self.run)
 
-    def do_check(self, url, email):
-        checker = Checker(url, email)
-        checker.start()
+    def do_check(self, url, email, last_event_date):
+        checker = Checker(url, email, last_event_date)
+        return checker.check_status()
 
     def set_timeout(self, connection, url):
         when = datetime.now() + timedelta(seconds=self.url_timeout)

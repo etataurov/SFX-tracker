@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -12,12 +12,14 @@ from .config import *
 log = logging.getLogger(__name__)
 log.setLevel(LOG_LEVEL)
 
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 
 class Checker:
     def __init__(self, url, to_email, last_change_date=None):
         self.url = url
         self.to_email = to_email
-        self.last_change_date = last_change_date
+        self.last_change_date = datetime.strptime(last_change_date, DATE_FORMAT) if last_change_date else None
 
     def make_message(self, changes):
         message = []
@@ -49,19 +51,18 @@ class Checker:
         new_changes = []
         for status_div in parsed.find_all('div', class_='status')[1:]:  # newer events are higher
             date = status_div.find('div', class_='date').text
+            date = datetime.strptime(date, DATE_FORMAT)
             event = status_div.find('div', class_='description').text
-            if self.last_change_date is None or self.last_change_date != date:
+            if self.last_change_date is None or date > self.last_change_date:
                 new_changes.append((date, event))
                 log.info('new event [{}]: {}'.format(date, event))
         if new_changes:
             self.send_new_changes(new_changes)
+            return datetime.strftime(new_changes[0][0], DATE_FORMAT)  # latest event date
         else:
             log.info('no new events')
 
     def check_status(self):
         log.debug('checking parcel status')
         response = requests.get(self.url)
-        self.parse_content(response.content)
-
-    def start(self):
-        self.check_status()
+        return self.parse_content(response.content)
