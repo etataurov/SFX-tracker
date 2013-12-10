@@ -2,13 +2,16 @@
 <html>
 <head>
     <title>SFX Tracker</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 </head>
 <body>
     <h1>SFX Tracker</h1>
     <form method="post">
-        <p><input type="text" name="url"></p>
-        <p><input type="text" name="email"></p>
-        <p><input type="submit"></p>
+        <div>
+            <div>{{ form.url.label }}: {{ form.url() }}</div>
+            <div>{{ form.email.label }}: {{ form.email() }}</div>
+            <input type="submit" value="Подписаться на обновления">
+        </div>
     </form>
 </body>
 </html>

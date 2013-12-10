@@ -22,6 +22,8 @@ class Tracker:
         log.info('new task added: {} {}'.format(url, email))
         connection = self.connection or (yield from Connection.create(**self.connection_params))
 
+        # TODO check if url exists, maybe use sorted set
+
         yield from connection.hset(url, 'email', email)
 
         yield from connection.lpush('data', [url])
