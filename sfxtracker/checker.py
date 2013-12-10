@@ -9,29 +9,27 @@ import requests
 
 from .config import *
 
-
-logging.basicConfig(format=u'%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
 log = logging.getLogger(__name__)
+log.setLevel(LOG_LEVEL)
 
 
 class Checker:
-    def __init__(self, url, to_email):
+    def __init__(self, url, to_email, last_change_date=None):
         self.url = url
         self.to_email = to_email
-        self.changes = {}
+        self.last_change_date = last_change_date
 
     def make_message(self, changes):
         message = []
-        for date in sorted(self.changes.keys(), key=lambda x: time.strptime(x, '%Y-%m-%d %H:%M:%S')):
-            message.append("<p>{}: {}</p>".format(date, self.changes[date]))
         for new_date, new_event in changes:
             message.append("<p><b>{}</b>: {}</p>".format(new_date, new_event))
+        message.append('<a href="{}">Предыдущие события</a>'.format(self.url))
         return '\n'.join(message)
 
     def send_new_changes(self, changes):
         msg = MIMEMultipart('alternative')
 
-        msg['Subject'] = 'New parcel event!'
+        msg['Subject'] = 'SFX: Обновление статуса посылки'
         msg['From'] = FROM_EMAIL
         msg['To'] = self.to_email
 
@@ -49,15 +47,14 @@ class Checker:
     def parse_content(self, content):
         parsed = BeautifulSoup(content)
         new_changes = []
-        for status_div in parsed.find_all('div', class_='status')[:0:-1]:  # newer events are higher
+        for status_div in parsed.find_all('div', class_='status')[1:]:  # newer events are higher
             date = status_div.find('div', class_='date').text
             event = status_div.find('div', class_='description').text
-            if date not in self.changes:
+            if self.last_change_date is None or self.last_change_date != date:
                 new_changes.append((date, event))
                 log.info('new event [{}]: {}'.format(date, event))
         if new_changes:
             self.send_new_changes(new_changes)
-            self.save_changes(new_changes)
         else:
             log.info('no new events')
 
@@ -68,7 +65,3 @@ class Checker:
 
     def start(self):
         self.check_status()
-
-    def save_changes(self, changes):
-        for date, event in changes:
-            self.changes[date] = event

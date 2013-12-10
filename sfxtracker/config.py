@@ -1,5 +1,8 @@
 import os
+import logging
 from urllib.parse import urlparse
+
+logging.basicConfig(format=u'%(asctime)s %(levelname)s %(message)s')
 
 LOGIN = os.getenv('POSTMARK_API_KEY')
 PASSWORD = os.getenv('POSTMARK_API_KEY')
@@ -16,3 +19,5 @@ REDIS_PASSWORD = redis_url.password
 
 URL_TIMEOUT = int(os.getenv('URL_TIMEOUT', 60*60))
 TIMEOUT = int(os.getenv('TIMEOUT', 10*60))
+
+LOG_LEVEL = logging.DEBUG if os.getenv('DEBUG', False) else logging.INFO
