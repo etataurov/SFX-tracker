@@ -20,29 +20,29 @@ class Tracker:
     @asyncio.coroutine
     def add_task(self, url, email):
         log.info('new task added: {} {}'.format(url, email))
-        connection = self.connection or (yield from Connection.create(**self.connection_params))
+        self.connection = self.connection or (yield from Connection.create(**self.connection_params))
 
         # TODO check if url exists, maybe use sorted set
 
-        yield from connection.hset(url, 'email', email)
+        yield from self.connection.hset(url, 'email', email)
 
-        yield from connection.lpush('data', [url])
+        yield from self.connection.lpush('data', [url])
 
-        yield from self.set_timeout(connection, url)
+        yield from self.set_timeout(self.connection, url)
 
     @asyncio.coroutine
     def check_status(self):
         log.info('Checking status')
-        connection = self.connection or (yield from Connection.create(**self.connection_params))
-        url = yield from connection.lindex('data', 0)
+        self.connection = self.connection or (yield from Connection.create(**self.connection_params))
+        url = yield from self.connection.lindex('data', 0)
         log.debug('get first from list: {}'.format(url))
         if url is not None:
-            when = yield from connection.hget(url, 'when')
+            when = yield from self.connection.hget(url, 'when')
             if float(when) <= datetime.now().timestamp():
                 log.debug('ready')
-                yield from connection.lpop('data')
-                email = yield from connection.hget(url, 'email')
-                last_date = yield from connection.hget(url, 'last_date')
+                yield from self.connection.lpop('data')
+                email = yield from self.connection.hget(url, 'email')
+                last_date = yield from self.connection.hget(url, 'last_date')
                 log.info('started checking for {} {}'.format(url, email))
 
                 try:
@@ -51,10 +51,10 @@ class Tracker:
                     log.error(str(exc))
                 else:
                     if new_date is not None:
-                        yield from connection.hset(url, 'last_date', new_date)
+                        yield from self.connection.hset(url, 'last_date', new_date)
 
-                yield from connection.lpush('data', [url])
-                yield from self.set_timeout(connection, url)
+                yield from self.connection.lpush('data', [url])
+                yield from self.set_timeout(self.connection, url)
             else:
                 log.debug('not ready yet {}'.format(datetime.fromtimestamp(float(when))))
         loop = asyncio.get_event_loop()
