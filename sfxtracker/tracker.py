@@ -53,7 +53,7 @@ class Tracker:
                     if new_date is not None:
                         yield from self.connection.hset(url, 'last_date', new_date)
 
-                yield from self.connection.lpush('data', [url])
+                yield from self.connection.rpush('data', [url])
                 yield from self.set_timeout(self.connection, url)
             else:
                 log.debug('not ready yet {}'.format(datetime.fromtimestamp(float(when))))
