@@ -27,8 +27,7 @@ class Tracker:
         yield from self.connection.hset(url, 'email', email)
 
         yield from self.connection.lpush('data', [url])
-
-        yield from self.set_timeout(self.connection, url)
+        #new url will be the first
 
     @asyncio.coroutine
     def check_status(self):
@@ -38,7 +37,7 @@ class Tracker:
         log.debug('get first from list: {}'.format(url))
         if url is not None:
             when = yield from self.connection.hget(url, 'when')
-            if float(when) <= datetime.now().timestamp():
+            if when is None or float(when) <= datetime.now().timestamp():
                 log.debug('ready')
                 yield from self.connection.lpop('data')
                 email = yield from self.connection.hget(url, 'email')
