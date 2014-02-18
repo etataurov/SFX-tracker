@@ -42,7 +42,7 @@ class Checker:
         s.login(LOGIN, PASSWORD)
         try:
             log.debug('sending new mail to {}'.format(self.to_email))
-            s.sendmail(FROM_EMAIL, [self.to_email], msg.as_string())
+            s.sendmail(FROM_EMAIL, self.to_email.split(','), msg.as_string())
         finally:
             s.quit()
 

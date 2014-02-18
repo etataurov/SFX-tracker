@@ -22,12 +22,14 @@ class Tracker:
         log.info('new task added: {} {}'.format(url, email))
         self.connection = self.connection or (yield from Connection.create(**self.connection_params))
 
-        # TODO check if url exists, maybe use sorted set
+        existing_email = yield from self.connection.hget(url, 'email')
+        if existing_email is not None:
+            email = ','.join([existing_email, email])
+        else:
+            # new url
+            yield from self.connection.lpush('data', [url])
 
         yield from self.connection.hset(url, 'email', email)
-
-        yield from self.connection.lpush('data', [url])
-        #new url will be the first
 
     @asyncio.coroutine
     def check_status(self):

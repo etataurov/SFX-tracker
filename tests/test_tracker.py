@@ -35,6 +35,22 @@ def test_tracker_add_two_tasks():
 
 
 @patch('asyncio_redis.Connection.create', mock_redis_connection)
+def test_tracker_add_second_email():
+    url = 'http://example.com/1'
+    email1 = 'me1@example.com'
+    email2 = 'me2@example.com'
+    tr = Tracker()
+    loop = asyncio.get_event_loop()
+    task = asyncio.Task(tr.add_task(url, email1))
+    loop.run_until_complete(task)
+    task = asyncio.Task(tr.add_task(url, email2))
+    loop.run_until_complete(task)
+
+    assert MockRedis.redis['data'] == [url]
+    assert MockRedis.redis[url]['email'] == ','.join([email1, email2])
+
+
+@patch('asyncio_redis.Connection.create', mock_redis_connection)
 @patch('sfxtracker.tracker.Tracker.do_check', lambda *args, **kwargs: None)
 def test_tracker_check_status():
     url = 'http://example.com'
