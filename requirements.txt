@@ -1,7 +1,7 @@
 Jinja2==2.7.1
 MarkupSafe==0.18
 Routes==2.0
-https://github.com/vkryachko/Vase/tarball/master
+https://github.com/etataurov/Vase/tarball/headers
 asyncio==0.2.1
 asyncio-redis==0.3
 beautifulsoup4==4.3.2
